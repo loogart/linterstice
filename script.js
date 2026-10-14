@@ -41,10 +41,10 @@ if (window.gsap && window.ScrollTrigger) {
     };
     const orbitDefs = svgNode('defs', {}, orbitSvg);
     const halo = svgNode('radialGradient', { id: 'orbit-sunlight' }, orbitDefs);
-    svgNode('stop', { offset: '0', 'stop-color': '#fff9e8', 'stop-opacity': '.95' }, halo);
-    svgNode('stop', { offset: '.24', 'stop-color': '#ffe0a3', 'stop-opacity': '.7' }, halo);
-    svgNode('stop', { offset: '.6', 'stop-color': '#e8bd76', 'stop-opacity': '.24' }, halo);
-    svgNode('stop', { offset: '1', 'stop-color': '#cb6a30', 'stop-opacity': '0' }, halo);
+    svgNode('stop', { offset: '0', 'stop-color': '#ffffff', 'stop-opacity': '.95' }, halo);
+    svgNode('stop', { offset: '.24', 'stop-color': '#fffaf2', 'stop-opacity': '.7' }, halo);
+    svgNode('stop', { offset: '.6', 'stop-color': '#f7efdf', 'stop-opacity': '.24' }, halo);
+    svgNode('stop', { offset: '1', 'stop-color': '#f7efdf', 'stop-opacity': '0' }, halo);
     const glowFilter = svgNode('filter', { id: 'orbit-trail-glow', x: '-80%', y: '-80%', width: '260%', height: '260%' }, orbitDefs);
     svgNode('feGaussianBlur', { stdDeviation: '3' }, glowFilter);
     const orbitLayers = [];
@@ -55,16 +55,16 @@ if (window.gsap && window.ScrollTrigger) {
       const length = circle.getTotalLength();
       const layer = svgNode('g', { class: 'orbit-light', opacity: '0', 'aria-hidden': 'true' }, orbitSvg);
       orbitLayers.push(layer);
-      const diffuse = svgNode('path', { fill: 'none', stroke: '#e8bd76', 'stroke-width': '5', opacity: '.65', filter: 'url(#orbit-trail-glow)' }, layer);
+      const diffuse = svgNode('path', { fill: 'none', stroke: '#fff8eb', 'stroke-width': '5', opacity: '.65', filter: 'url(#orbit-trail-glow)' }, layer);
       const streak = Array.from({ length: 16 }, (_, segment) => svgNode('path', {
-        fill: 'none', stroke: segment < 4 ? '#fff7de' : '#e8bd76',
+        fill: 'none', stroke: segment < 4 ? '#ffffff' : '#faf5ea',
         'stroke-width': (1.8 - segment * 0.06).toFixed(2),
         'stroke-linecap': 'round', opacity: Math.pow(1 - segment / 16, 2).toFixed(3)
       }, layer));
       const light = svgNode('g', { class: 'orbit-light-head' }, layer);
       svgNode('circle', { r: '28', fill: 'url(#orbit-sunlight)' }, light);
-      svgNode('circle', { r: '6', fill: '#e8bd76', opacity: '.75', filter: 'url(#orbit-trail-glow)' }, light);
-      svgNode('circle', { r: index ? '2.7' : '3.4', fill: '#fffaf0' }, light);
+      svgNode('circle', { r: '6', fill: '#fff8eb', opacity: '.75', filter: 'url(#orbit-trail-glow)' }, light);
+      svgNode('circle', { r: index ? '2.7' : '3.4', fill: '#ffffff' }, light);
       const point = phase => {
         const angle = (phase + 0.32 + index * 0.2) * Math.PI * 2;
         return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
