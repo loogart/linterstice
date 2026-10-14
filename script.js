@@ -31,12 +31,67 @@ if (window.gsap && window.ScrollTrigger) {
     arrival.from('.hero-description > *', { autoAlpha: 0, y: 10, duration: 1.8, stagger: 0.15 }, 0.45);
     const hero = document.querySelector('.hero');
     const circles = [...document.querySelectorAll('.hero-circles circle')];
+    const orbitSvg = document.querySelector('.hero-circles');
+    const svgNamespace = 'http://www.w3.org/2000/svg';
+    const svgNode = (name, attributes, parent) => {
+      const node = document.createElementNS(svgNamespace, name);
+      Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
+      parent.appendChild(node);
+      return node;
+    };
+    const orbitDefs = svgNode('defs', {}, orbitSvg);
+    const halo = svgNode('radialGradient', { id: 'orbit-sunlight' }, orbitDefs);
+    svgNode('stop', { offset: '0', 'stop-color': '#fff9e8', 'stop-opacity': '.95' }, halo);
+    svgNode('stop', { offset: '.24', 'stop-color': '#ffe0a3', 'stop-opacity': '.7' }, halo);
+    svgNode('stop', { offset: '.6', 'stop-color': '#e8bd76', 'stop-opacity': '.24' }, halo);
+    svgNode('stop', { offset: '1', 'stop-color': '#cb6a30', 'stop-opacity': '0' }, halo);
+    const glowFilter = svgNode('filter', { id: 'orbit-trail-glow', x: '-80%', y: '-80%', width: '260%', height: '260%' }, orbitDefs);
+    svgNode('feGaussianBlur', { stdDeviation: '3' }, glowFilter);
+    const orbitLayers = [];
     const circleLoops = circles.map((circle, index) => {
+      const cx = Number(circle.getAttribute('cx'));
+      const cy = Number(circle.getAttribute('cy'));
+      const radius = Number(circle.getAttribute('r'));
       const length = circle.getTotalLength();
-      const loop = gsap.timeline({ repeat: -1, repeatDelay: 0.8 });
-      loop.set(circle, { strokeDasharray: length + 2, strokeDashoffset: length * 0.68, autoRound: false });
-      loop.to(circle, { strokeDashoffset: 0, duration: 5.6 + index * 0.5, ease: 'sine.inOut', autoRound: false });
-      loop.to(circle, { strokeDashoffset: length * 0.68, duration: 5.6 + index * 0.5, ease: 'sine.inOut', autoRound: false }, '+=1.4');
+      const layer = svgNode('g', { class: 'orbit-light', opacity: '0', 'aria-hidden': 'true' }, orbitSvg);
+      orbitLayers.push(layer);
+      const diffuse = svgNode('path', { fill: 'none', stroke: '#e8bd76', 'stroke-width': '5', opacity: '.65', filter: 'url(#orbit-trail-glow)' }, layer);
+      const streak = Array.from({ length: 16 }, (_, segment) => svgNode('path', {
+        fill: 'none', stroke: segment < 4 ? '#fff7de' : '#e8bd76',
+        'stroke-width': (1.8 - segment * 0.06).toFixed(2),
+        'stroke-linecap': 'round', opacity: Math.pow(1 - segment / 16, 2).toFixed(3)
+      }, layer));
+      const light = svgNode('g', { class: 'orbit-light-head' }, layer);
+      svgNode('circle', { r: '28', fill: 'url(#orbit-sunlight)' }, light);
+      svgNode('circle', { r: '6', fill: '#e8bd76', opacity: '.75', filter: 'url(#orbit-trail-glow)' }, light);
+      svgNode('circle', { r: index ? '2.7' : '3.4', fill: '#fffaf0' }, light);
+      const point = phase => {
+        const angle = (phase + 0.32 + index * 0.2) * Math.PI * 2;
+        return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+      };
+      const arc = (start, end) => {
+        const from = point(start), to = point(end);
+        return `M${from.x.toFixed(3)},${from.y.toFixed(3)} A${radius},${radius} 0 0 1 ${to.x.toFixed(3)},${to.y.toFixed(3)}`;
+      };
+      const state = { phase: 0 };
+      const drawOrbit = () => {
+        const head = point(state.phase);
+        light.setAttribute('transform', `translate(${head.x.toFixed(3)} ${head.y.toFixed(3)})`);
+        streak.forEach((segment, position) => segment.setAttribute('d', arc(state.phase - 0.06 * (position + 1) / 16, state.phase - 0.06 * position / 16)));
+        diffuse.setAttribute('d', arc(state.phase - 0.06, state.phase));
+      };
+      drawOrbit();
+      // One sunrise pass on arrival, then another at each ten-second mark.
+      const loop = gsap.timeline({ repeat: -1 });
+      const delay = index * 0.45;
+      loop.set(circle, { strokeDasharray: length + 2, strokeDashoffset: length * 0.68, autoRound: false }, 0);
+      loop.set(layer, { opacity: 0 }, 0);
+      loop.to(layer, { opacity: index ? 0.8 : 1, duration: 0.9, ease: 'sine.out' }, delay);
+      loop.to(state, { phase: 1, duration: 5.2, ease: 'sine.inOut', onUpdate: drawOrbit }, delay);
+      loop.to(circle, { strokeDashoffset: 0, duration: 5.2, ease: 'sine.inOut', autoRound: false }, delay);
+      loop.to(layer, { opacity: 0, duration: 0.9, ease: 'sine.in' }, delay + 4.3);
+      loop.to(circle, { strokeDashoffset: length * 0.68, duration: 2, ease: 'sine.inOut', autoRound: false }, 7);
+      loop.to({}, { duration: 0.01 }, 9.99);
       return loop;
     });
     const syncHeroLoops = () => {
@@ -141,6 +196,7 @@ if (window.gsap && window.ScrollTrigger) {
     document.addEventListener('visibilitychange', startDots);
     return () => {
       logoObserver.disconnect(); heroObserver.disconnect();
+      orbitLayers.forEach(layer => layer.remove()); orbitDefs.remove();
       window.removeEventListener('scroll', updateQuotes); window.removeEventListener('resize', updateQuotes);
       document.removeEventListener('visibilitychange', syncLogo);
       document.removeEventListener('visibilitychange', syncHeroLoops);

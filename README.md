@@ -16,7 +16,7 @@ Contact links call Pier Olivier at 819 351-5755. Until an online booking URL is 
 
 ## Motion
 
-Hero text arrives incrementally with a two-second heading fade. Other reveals and testimonial typing reverse with scroll position. Hero circles draw in a loop, dots respond to mouse or touch, and section dots, the forest, and the hand use gentle parallax. The footer logo blooms in a loop with closed leaf joins. The breathing ribbons are a custom animated SVG.
+Hero text arrives incrementally with a two-second heading fade. Other reveals and testimonial typing reverse with scroll position. Hero circles draw in a ten-second loop with warm orbiting light cores and curved shooting-star trails, dots respond to mouse or touch, and section dots, the forest, and the hand use gentle parallax. The footer logo blooms in a loop with closed leaf joins. The breathing ribbons are a custom animated SVG.
 
 Reduced-motion preferences preserve static, readable content. Ambient loops pause offscreen or when the tab is hidden.
 
